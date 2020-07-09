@@ -28,10 +28,10 @@ class RunParser(object):
             self.parse()
             self.create_db_obj()
         else:
-            raise os.error(" flowcell cannot be found at {0}".format(path))
+            raise os.error(' flowcell cannot be found at {}'.format(path))
 
     def parse(self, demultiplexingDir='Demultiplexing'):
-        """Tries to parse as many files as possible from a run folder"""
+        """Tries to parse as many files as possible from a run folder."""
         pattern = r'(\d{6})_([ST-]*\w+\d+)_\d+_([AB]?)([A-Z0-9\-]+)'
         m = re.match(pattern, os.path.basename(os.path.abspath(self.path)))
         fc_name = m.group(4)
@@ -58,11 +58,11 @@ class RunParser(object):
                                'lane.html')
         undeterminedStatsFolder = os.path.join(self.path,
                                                demultiplexingDir,
-                                               "Stats")
+                                               'Stats')
         json_path = os.path.join(self.path,
                                  demultiplexingDir,
-                                 "Stats",
-                                 "Stats.json")
+                                 'Stats',
+                                 'Stats.json')
 
         try:
             self.runinfo = RunInfoParser(rinfo_path)
@@ -108,7 +108,7 @@ class RunParser(object):
     def create_db_obj(self):
         self.obj = {}
         bits = os.path.basename(os.path.abspath(self.path)).split('_')
-        name = "{0}_{1}".format(bits[0], bits[-1])
+        name = '{}_{}'.format(bits[0], bits[-1])
         self.obj['name'] = name
         if self.runinfo:
             self.obj['RunInfo'] = self.runinfo.data
@@ -149,10 +149,10 @@ class DemuxSummaryParser(object):
             self.TOTAL = {}
             self.parse()
         else:
-            raise os.error("DemuxSummary folder {0} cannot be found".format(path))
+            raise os.error('DemuxSummary folder {} cannot be found'.format(path))
 
     def parse(self):
-        # will only save the 50 more frequent indexes
+        # Will only save the 50 more frequent indexes
         pattern = re.compile('DemuxSummaryF1L([0-9]).txt')
         for file in glob.glob(os.path.join(self.path, 'DemuxSummaryF1L?.txt')):
             lane_nb = pattern.search(file).group(1)
@@ -162,10 +162,10 @@ class DemuxSummaryParser(object):
                 undeterminePart = False
                 for line in f:
                     if not undeterminePart:
-                        if "### Columns:" in line:
+                        if '### Columns:' in line:
                             undeterminePart = True
                     else:
-                        # it means I am readng the index_Sequence  Hit_Count
+                        # It means I am readng the index_Sequence  Hit_Count
                         components = line.rstrip().split('\t')
                         if len(self.result[lane_nb].keys()) < 50:
                             self.result[lane_nb][components[0]] = int(components[1])
@@ -178,7 +178,7 @@ class LaneBarcodeParser(object):
             self.path = path
             self.parse()
         else:
-            raise os.error(" laneBarcode.html cannot be found at {0}".format(path))
+            raise os.error(' laneBarcode.html cannot be found at {}'.format(path))
 
     def parse(self):
         self.sample_data = []
@@ -201,7 +201,7 @@ class LaneBarcodeParser(object):
             rows = lane_table.find_all('tr')
             for row in rows[0:]:
                 if len(row.find_all('th')):
-                    # this is the header row
+                    # This is the header row
                     for th in row.find_all('th'):
                         key = th.text.replace(
                             '<br/>', ' ').replace(
@@ -230,7 +230,7 @@ class SampleSheetParser(object):
         if os.path.exists(path):
             self.parse(path)
         else:
-            raise os.error(" sample sheet cannot be found at {0}".format(path))
+            raise os.error(' sample sheet cannot be found at {}'.format(path))
 
     def parse(self, path):
         flag = None
@@ -239,8 +239,8 @@ class SampleSheetParser(object):
         settings = []
         csvlines = []
         data = []
-        flag = 'data'  # in case of HiSeq samplesheet only data section is present
-        separator = ","
+        flag = 'data'  # In case of HiSeq samplesheet only data section is present
+        separator = ','
         with open(path, newline='') as csvfile:
             # Ignore empty lines (for instance the Illumina Experiment Manager
             # generates sample sheets with empty lines
@@ -260,11 +260,9 @@ class SampleSheetParser(object):
                     tokens = line.split(separator)
                     if flag == 'HEADER':
                         if len(tokens) < 2:
-                            self.log.error("file {} does not have a",
-                                           "correct format.".format(path))
-                            raise RuntimeError("Could not parse the",
-                                               "samplesheet, the file does",
-                                               "not seem to have a correct format.")
+                            self.log.error('file {} does not have a correct format.'.format(path))
+                            raise RuntimeError('Could not parse the samplesheet, the file does' \
+                                               'not seem to have a correct format.')
                         header[tokens[0]] = tokens[1]
                     elif flag == 'READS':
                         reads.append(tokens[0])
@@ -315,7 +313,7 @@ class RunInfoParser(object):
         if os.path.exists(path):
             self.parse()
         else:
-            raise os.error(" run info cannot be found at {0}".format(path))
+            raise os.error(' run info cannot be found at {0}'.format(path))
 
     def parse(self):
         data = {}
@@ -330,8 +328,8 @@ class RunInfoParser(object):
         # Change Novaseq date format from
         # 10/17/2017 10:59:16 AM to 171017 (yymmdd)
         if len(run.find('Date').text) > 6:
-            data['Date'] = datetime.strptime(run.find('Date').text.split(" ")[0],
-                                             "%m/%d/%Y").strftime("%y%m%d")
+            data['Date'] = datetime.strptime(run.find('Date').text.split(' ')[0],
+                                             '%m/%d/%Y').strftime('%y%m%d')
         else:
             data['Date'] = run.find('Date').text
         data['Reads'] = []
@@ -343,12 +341,11 @@ class RunInfoParser(object):
         self.recipe = make_run_recipe(self.data.get('Reads', {}))
 
     def get_read_configuration(self):
-        """return a list of dicts containig the Read Configuration
-            """
+        """Return a list of dicts containig the Read Configuration."""
         readConfig = []
         try:
             readConfig = self.data['Reads']
-            return sorted(readConfig, key=lambda r: int(r.get("Number", 0)))
+            return sorted(readConfig, key=lambda r: int(r.get('Number', 0)))
         except IOError:
             raise RuntimeError('Reads section not present in RunInfo.',
                                'Check the FC folder.')
@@ -369,7 +366,7 @@ class RunParametersParser(object):
         if os.path.exists(path):
             self.parse()
         else:
-            raise os.error("RunParameters file cannot be found at {0}".format(path))
+            raise os.error('RunParameters file cannot be found at {0}'.format(path))
 
     def parse(self):
         tree = ET.parse(self.path)
@@ -394,12 +391,12 @@ def make_run_recipe(reads):
             nb_indexed_reads += 1
         else:
             if numCycles and numCycles != read['NumCycles']:
-                logging.warn("NumCycles in not coherent")
+                logging.warn('NumCycles in not coherent')
             else:
                 numCycles = read['NumCycles']
 
     if reads:
-        return "{0}x{1}".format(nb_reads-nb_indexed_reads, numCycles)
+        return '{}x{}'.format(nb_reads - nb_indexed_reads, numCycles)
     return None
 
 
@@ -428,7 +425,7 @@ def xml_to_dict(root):
                 current.update({'attribs': root.attribs})
         else:
             current = root.attrib
-    if root.text and root.text.strip() != "":
+    if root.text and root.text.strip() != '':
         if current:
             if 'text' not in current:
                 current['text'] = root.text
@@ -447,11 +444,10 @@ class CycleTimesParser(object):
             self.cycles = []
             self.parse()
         else:
-            raise os.error("file {0} cannot be found".format(path))
+            raise os.error('file {0} cannot be found'.format(path))
 
     def parse(self):
-        """
-        parse CycleTimes.txt and return ordered list of cycles
+        """Parse CycleTimes.txt and return ordered list of cycles
         CycleTimes.txt contains records:
         <date> <time> <barcode> <cycle> <info>
         one cycle contains a few records (defined by <cycle>)
@@ -462,49 +458,49 @@ class CycleTimesParser(object):
         date_format = '%m/%d/%Y-%H:%M:%S.%f'
         with open(self.path, 'r') as file:
             cycle_times = file.readlines()
-            # if file is empty, return
+            # If file is empty, return
             if not cycle_times:
                 return
 
-            # first line is header, don't read it
+            # First line is header, don't read it
             for cycle_line in cycle_times[1:]:
-                # split line into strings
+                # Split line into strings
                 cycle_list = cycle_line.split()
                 cycle_time_obj = {}
-                # parse datetime
+                # Parse datetime
                 cycle_time_obj['datetime'] = datetime.strptime(
-                    "{date}-{time}".format(
+                    '{date}-{time}'.format(
                         date=cycle_list[0],
                         time=cycle_list[1]),
                     date_format)
-                # parse cycle number
+                # Parse cycle number
                 cycle_time_obj['cycle'] = int(cycle_list[3])
-                # add object in the list
+                # Add object in the list
                 data.append(cycle_time_obj)
 
-        # take the first record as current cycle
+        # Take the first record as current cycle
         current_cycle = {
             'cycle_number': data[0]['cycle'],
             'start': data[0]['datetime'],
             'end': data[0]['datetime']
         }
-        # compare each record with current cycle (except the first one)
+        # Compare each record with current cycle (except the first one)
         for record in data[1:]:
-            # if we are at the same cycle
+            # If we are at the same cycle
             if record['cycle'] == current_cycle['cycle_number']:
-                # override end of cycle with current record
+                # Override end of cycle with current record
                 current_cycle['end'] = record['datetime']
-            # if a new cycle starts
+            # If a new cycle starts
             else:
-                # save previous cycle
+                # Save previous cycle
                 self.cycles.append(current_cycle)
-                # initialize new current_cycle
+                # Initialize new current_cycle
                 current_cycle = {
                     'cycle_number': record['cycle'],
                     'start': record['datetime'],
                     'end': record['datetime']
                 }
-        # the last records is not saved inside the loop
+        # The last records is not saved inside the loop
         if current_cycle not in self.cycles:
             self.cycles.append(current_cycle)
 
@@ -518,7 +514,7 @@ class StatsParser(object):
             self.data = None
             self.parse()
         else:
-            raise os.error("file {0} cannot be found".format(path))
+            raise os.error('file {} cannot be found'.format(path))
 
     def parse(self):
         with open(self.path) as data:
