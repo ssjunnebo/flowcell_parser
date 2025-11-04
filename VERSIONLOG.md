@@ -1,5 +1,8 @@
 # Flowcell Parser Version Log
 
+## 20251104.1
+Remove unused db module 
+
 ## 20230524.1
 Add support for NovaSeqXPlus and improve readability
 
